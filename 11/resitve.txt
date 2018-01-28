@@ -1,0 +1,66 @@
+// Prva naloga:
+trait Nat{
+    def <(other:Nat):Boolean = {
+        (this, other) match {
+            case (Z, S(n)) => true
+            case (_, Z) => false
+            case (S(n), S(m)) => n<m
+        }
+    }
+
+    def +(other:Nat):Nat = {
+        (this, other) match {
+            case (Z, m) => m
+            case (S(n), m) => n + S(m)
+        }
+    }
+
+    def *(other:Nat):Nat = {
+        (this, other) match {
+            case (Z, m) => Z
+            case (S(n), m) => m + (n*m)
+        }
+    }
+}
+object Nat{
+    def apply(n:Int):Nat =
+        n match{
+            case 0 => Z
+            case _ => S(Nat(n-1))
+        }
+}
+case class S(n:Nat) extends Nat
+case object Z extends Nat
+
+
+// Druga naloga:
+def allTrees(n:Int):List[Tree] =
+    if(n==0)
+        List(Empty)
+    else
+        (0 to n-1).flatMap(i=>for( left<-allTrees(i); right<-allTrees(n-1-i) ) yield Node(left,right) ).toList
+
+// Tretja naloga:
+case class C(real: Double, img:Double){
+    def +(other:C):C =
+        C(real+other.real, img+other.img)
+    def -(other:C):C =
+        C(real-other.real, img-other.img)
+    def *(other:C):C =
+        C(real*other.real- img*other.img,img*other.real+ real*other.img )
+    val size:Double = real*real+img*img
+}
+
+def cSeq(c:C):Stream[C] = {
+    def tC(curr:C):Stream[C] = {
+        curr#::tC((curr*curr)+c)
+    }
+
+    tC(C(0,0))
+}
+
+def isDivergent(s:Stream[C]):Boolean = s.take(1000).exists(_.size>4)
+
+val mand = for(y <- -1.0 to 1.0 by 0.1; x <- -2.0 until 1.0 by 0.05) yield (y,x)
+
+mand.map(p=>isDivergent(cSeq(C(p._2,p._1)))).map(if(_)"*"else" ").grouped(60).foreach(l=>{l.foreach(print);println})
